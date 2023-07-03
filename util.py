@@ -14,7 +14,7 @@ def page_summarizer_json(data):
                                     
                 # Get Chart Type
                 chart_type = config['singleVisual']['visualType']
-                                    
+
                 # Get Font color
                 font_color = config["singleVisual"]["vcObjects"]["title"][0]["properties"]["fontColor"]["solid"]["color"]["expr"]["ThemeDataColor"]["ColorId"]
                                     
@@ -72,8 +72,14 @@ def ff_table_generator(data):
     frequency_df["Font Family"] = frequency_df["Font Family"].str.replace("'", "")
     grouped_df = frequency_df.groupby('Font Family').agg({'Info': lambda x: ', '.join(map(str, x)), 'Frequency': 'sum'}).reset_index()
     #grouped_df=grouped_df.rename({"Frequency":"# of charts"})
-    grouped_df = grouped_df.rename(columns={'Frequency': '# of charts'})
-    grouped_df = grouped_df[['Font Family', '# of charts', 'Info']]
+    grouped_df = grouped_df.rename(columns={'Frequency': '# of charts'})    
+    # Calculate the total sum of the column
+    total = grouped_df['# of charts'].sum()
+
+    # Calculate the percentages and assign them to a new column
+    grouped_df['Percent of total'] = round((grouped_df['# of charts'] / total) * 100,1).astype(str)
+    grouped_df = grouped_df[['Font Family', '# of charts', 'Percent of total','Info']]
+
     return grouped_df
 
 def fs_table_generator(data):
@@ -98,4 +104,28 @@ def fs_table_generator(data):
     grouped_df = grouped_df.rename(columns={'Frequency': '# of charts'})
     grouped_df = grouped_df[['Font Sizes', '# of charts', 'Info']]
     grouped_df['Font Sizes']=grouped_df['Font Sizes'].str.replace('D','')
+    
+    # Calculate the total sum of the column
+    total = grouped_df['# of charts'].sum()
+
+    # Calculate the percentages and assign them to a new column
+    grouped_df['Percent of total'] = round((grouped_df['# of charts'] / total) * 100,1).astype(str)
+    grouped_df = grouped_df[['Font Sizes', '# of charts','Percent of total','Info']]
     return grouped_df
+
+def msg_printer(df,flag):
+    total_rows = df.shape[0]
+
+    if flag=='Font Family':
+        unique_font_family = df['Font Family'].nunique()
+        if total_rows == 1:
+            st.success(" ✅ You have used only one font family in chart titles")
+        else:
+            st.error(f"⚠️ You have used {unique_font_family} different font families in chart titles")
+
+    else :
+        unique_font_size = df['Font Sizes'].nunique()
+        if total_rows == 1:
+            st.success("✅ You have used only one font size in chart titles")
+        else:
+            st.error(f"⚠️ You have used {unique_font_size} different font sizes in chart titles")
