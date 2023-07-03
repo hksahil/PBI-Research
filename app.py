@@ -1,4 +1,6 @@
-## Main File
+## Research
+# Using config to get all the information
+
 
 import streamlit as st
 import zipfile
@@ -49,9 +51,9 @@ if ss:
                         # Generate page wise required dataframe
                         df2=page_summarizer_df(df1)
                         # st.write(df2) DEBUG
-                        st.header('Font Family Summary')
-                        df2=table_generator(df1)
-                        st.write(df2)
+                        st.header('Font Family Used in Charts')
+                        df3=table_generator(df1)
+                        st.write(df3)
 
                         # except:
                         #     print('hi')
