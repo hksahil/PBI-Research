@@ -7,7 +7,7 @@ import zipfile
 import io
 import json
 import pandas as pd
-from util import page_summarizer_json,table_generator,page_summarizer_df
+from util import page_summarizer_json,ff_table_generator,page_summarizer_df,fs_table_generator
 
 st.title('PowerBI Standardization Checker')
 
@@ -35,25 +35,28 @@ if ss:
         # Extract the files from the source zip file and re-zip them into a destination zip file
         with zipfile.ZipFile(ss, 'r') as source_zip:
             with zipfile.ZipFile(zip_data, 'w') as destination_zip:
-                # Iterate over the files in the source zip file
-                for name in source_zip.namelist():
-
-                    # Skip the Security Binding file
-                    if name == 'SecurityBindings':
+                for name in source_zip.namelist(): # Iterate over the files in the source zip file
+                    if name == 'SecurityBindings': # Skip the Security Binding file
                         continue
 
-                    # Manipulate the Layout file
                     if name == 'Report/Layout':
-                        # Read the contents of the layout file
-                        data = source_zip.read(name).decode('utf-16 le')
-                        # Generate page wise required json structure  
-                        df1=page_summarizer_json(data)
-                        # Generate page wise required dataframe
-                        df2=page_summarizer_df(df1)
+                        data = source_zip.read(name).decode('utf-16 le') # Read the contents of the layout file 
+                        
+                        ####### Font Family Generator starts #######
+                        df1=page_summarizer_json(data) # Generate page wise required json structure 
+                        df2=page_summarizer_df(df1) # Generate page wise required dataframe
                         # st.write(df2) DEBUG
-                        st.header('Font Family Used in Charts')
-                        df3=table_generator(df1)
+                        st.header('Font Family used in Charts')
+                        df3=ff_table_generator(df1)
                         st.write(df3)
+                        ####### Font Family Generator ends #######
+
+                        ####### Font Size Generator starts #######
+                        st.header('Font Size used in Charts')
+                        df4=fs_table_generator(df1)
+                        st.write(df4)
+                        ####### Font Size Generator ends #######
+
 
                         # except:
                         #     print('hi')
