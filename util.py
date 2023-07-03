@@ -22,17 +22,18 @@ def page_summarizer_json(data):
                 font_family = config["singleVisual"]["vcObjects"]["title"][0]["properties"]["fontFamily"]["expr"]["Literal"]["Value"]
                                     
                 # Get font Size
-                font_size = 10  # Default font size
-                if 'vcObjects' in config and 'title' in config['vcObjects'][0]['properties']:
-                    font_size = config['vcObjects'][0]['properties']['fontSize']
-                                    
+                try:
+                    font_size = config["singleVisual"]["vcObjects"]["title"][0]["properties"]["fontSize"]["expr"]["Literal"]["Value"]
+                except:
+                    font_size = 12
+
                 # Get Width
                 width = container['width']
                                     
                 # Get Height
                 height = container['height']
                                     
-                chart_info.append({'chart_type': chart_type, 'font-family': font_family})
+                chart_info.append({'chart_type': chart_type, 'font-family': font_family,'font-size':font_size})
                               
             report_chart_info[report_page_name] = chart_info
 
@@ -52,7 +53,7 @@ def page_summarizer_df(data):
             df = df.append({"Page": page, "Index": index, "Chart Type": chart_type, "Font Family": font_family}, ignore_index=True)
     return df
 
-def table_generator(data):
+def ff_table_generator(data):
     font_families = []
     pages_used = []
     chart_types=[]
@@ -69,8 +70,32 @@ def table_generator(data):
             frequency_df['Info']=frequency_df['Pages']+ "'s " + frequency_df['Chart types']
     # Remove the quotes from the Font Family column
     frequency_df["Font Family"] = frequency_df["Font Family"].str.replace("'", "")
-    grouped_df = frequency_df.groupby('Font Family').agg({'Info': lambda x: ','.join(map(str, x)), 'Frequency': 'sum'}).reset_index()
+    grouped_df = frequency_df.groupby('Font Family').agg({'Info': lambda x: ', '.join(map(str, x)), 'Frequency': 'sum'}).reset_index()
     #grouped_df=grouped_df.rename({"Frequency":"# of charts"})
     grouped_df = grouped_df.rename(columns={'Frequency': '# of charts'})
     grouped_df = grouped_df[['Font Family', '# of charts', 'Info']]
+    return grouped_df
+
+def fs_table_generator(data):
+    font_sizes = []
+    pages_used = []
+    chart_types=[]
+    for page, items in data.items():
+        for item in items:
+            font_size = item["font-size"]
+            font_sizes.append(font_size)
+            chart_type = item["chart_type"]
+            chart_types.append(chart_type)
+            pages_used.append(page)
+            df = pd.DataFrame({"Font Sizes": font_sizes, "Pages": pages_used,"Chart types":chart_types})
+            frequency_df = df.groupby(["Font Sizes", "Pages","Chart types"]).size().reset_index()
+            frequency_df.columns = ["Font Sizes", "Pages","Chart types","Frequency"]
+            frequency_df['Info']=frequency_df['Pages']+ "'s " + frequency_df['Chart types']
+    # Remove the quotes from the Font Family column
+    frequency_df["Font Sizes"] = frequency_df["Font Sizes"].str.replace("'", "")
+    grouped_df = frequency_df.groupby('Font Sizes').agg({'Info': lambda x: ', '.join(map(str, x)), 'Frequency': 'sum'}).reset_index()
+    #grouped_df=grouped_df.rename({"Frequency":"# of charts"})
+    grouped_df = grouped_df.rename(columns={'Frequency': '# of charts'})
+    grouped_df = grouped_df[['Font Sizes', '# of charts', 'Info']]
+    grouped_df['Font Sizes']=grouped_df['Font Sizes'].str.replace('D','')
     return grouped_df
