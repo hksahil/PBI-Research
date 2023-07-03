@@ -7,7 +7,7 @@ import zipfile
 import io
 import json
 import pandas as pd
-from util import page_summarizer_json,ff_table_generator,page_summarizer_df,fs_table_generator
+from util import page_summarizer_json,ff_table_generator,page_summarizer_df,fs_table_generator,msg_printer
 
 st.title('PowerBI Standardization Checker')
 
@@ -46,14 +46,18 @@ if ss:
                         df1=page_summarizer_json(data) # Generate page wise required json structure 
                         df2=page_summarizer_df(df1) # Generate page wise required dataframe
                         # st.write(df2) DEBUG
-                        st.header('Font Family used in Charts')
+                        st.header('Font Family')
                         df3=ff_table_generator(df1)
+                        msg_printer(df3,'Font Family')
+                        st.write('Report Analysis:')
                         st.write(df3)
                         ####### Font Family Generator ends #######
 
                         ####### Font Size Generator starts #######
-                        st.header('Font Size used in Charts')
+                        st.header('Font Size')
                         df4=fs_table_generator(df1)
+                        msg_printer(df4,'Font Size')
+                        st.write('Report Analysis:')
                         st.write(df4)
                         ####### Font Size Generator ends #######
 
@@ -70,10 +74,10 @@ if ss:
 
         # Download the destination file
         st.download_button(
-            label='Download Ouput JSON file',
-            data=zip_data.getvalue(),
-            file_name='destination.pbix',
-            mime='application/pbix'
+            'Export results to csv',
+            df4.to_csv(),
+            file_name="Documentation-csv-output",
+            mime="text/csv"
         )
     else:
         print('')
