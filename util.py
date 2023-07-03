@@ -55,17 +55,22 @@ def page_summarizer_df(data):
 def table_generator(data):
     font_families = []
     pages_used = []
+    chart_types=[]
     for page, items in data.items():
         for item in items:
             font_family = item["font-family"]
             font_families.append(font_family)
+            chart_type = item["chart_type"]
+            chart_types.append(chart_type)
             pages_used.append(page)
-            df = pd.DataFrame({"Font Family": font_families, "Pages": pages_used})
-            frequency_df = df.groupby(["Font Family", "Pages"]).size().reset_index()
-            frequency_df.columns = ["Font Family", "Pages", "Frequency"]
-
+            df = pd.DataFrame({"Font Family": font_families, "Pages": pages_used,"Chart types":chart_types})
+            frequency_df = df.groupby(["Font Family", "Pages","Chart types"]).size().reset_index()
+            frequency_df.columns = ["Font Family", "Pages","Chart types","Frequency"]
+            frequency_df['Info']=frequency_df['Pages']+ "'s " + frequency_df['Chart types']
     # Remove the quotes from the Font Family column
     frequency_df["Font Family"] = frequency_df["Font Family"].str.replace("'", "")
-    grouped_df = frequency_df.groupby('Font Family').agg({'Pages': lambda x: ','.join(map(str, x)), 'Frequency': 'sum'}).reset_index()
-    #return frequency_df
+    grouped_df = frequency_df.groupby('Font Family').agg({'Info': lambda x: ','.join(map(str, x)), 'Frequency': 'sum'}).reset_index()
+    #grouped_df=grouped_df.rename({"Frequency":"# of charts"})
+    grouped_df = grouped_df.rename(columns={'Frequency': '# of charts'})
+    grouped_df = grouped_df[['Font Family', '# of charts', 'Info']]
     return grouped_df
